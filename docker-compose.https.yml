@@ -1,0 +1,25 @@
+services:
+  shop:
+    environment:
+      PUBLIC_ORIGIN: "https://${DOMAIN:?Set DOMAIN in .env}"
+      TRUST_PROXY: "1"
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: "${DOMAIN:?Set DOMAIN in .env}"
+      PORT: "${PORT:-9006}"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      shop:
+        condition: service_healthy
+volumes:
+  caddy_data:
+  caddy_config:

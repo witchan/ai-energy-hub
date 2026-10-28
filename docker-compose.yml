@@ -1,0 +1,25 @@
+services:
+  shop:
+    build: .
+    container_name: proxy-shop
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      BIND_HOST: 0.0.0.0
+    ports:
+      - "127.0.0.1:${PORT:-9006}:${PORT:-9006}"
+    volumes:
+      - ./data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:'+os.environ.get('PORT','9006')+'/healthz',timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

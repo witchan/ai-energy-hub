@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 能量站</title>
+<style>
+:root{
+ --bg:#f7f8f4;--card-bg:#fff;--text:#202d27;--text-secondary:#66746c;--text-muted:#8a968f;
+ --border:#e6ebe4;--border-strong:#d7dfd5;--primary:#245c45;--primary-hover:#194a36;
+ --primary-light:#eef5ed;--warning:#937437;--warning-light:#f9f5e9;
+ --danger:#ae4741;--radius:18px;--shadow:0 8px 30px #1b382506;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:100px}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.65;min-height:100vh;-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font:inherit;color:inherit}button,a,input,textarea,select{-webkit-tap-highlight-color:transparent}
+button{cursor:pointer}button:disabled{cursor:not-allowed}a{color:inherit;text-decoration:none}svg{display:inline-block;vertical-align:middle}
+.hidden,[hidden]{display:none!important}button:focus-visible,a:focus-visible{outline:3px solid #5b8966;outline-offset:4px}
+.topbar{position:sticky;top:0;z-index:100;background:#fcfdfb;border-bottom:1px solid var(--border)}
+.topbar-inner{max-width:1224px;margin:auto;min-height:76px;padding:0 32px;display:flex;align-items:center;gap:52px}
+.brand{display:flex;align-items:center;gap:11px;flex-shrink:0}.brand-logo{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--primary);color:#fff}
+.brand-logo svg{width:24px;height:24px}.brand-text{line-height:1.3}.brand-name{font-size:17px;font-weight:650;letter-spacing:.3px}.brand-sub{font-size:9px;letter-spacing:2.1px;color:var(--text-secondary)}
+.topnav{display:flex;align-items:center;gap:7px}.topnav .tab,.guide-link{display:flex;align-items:center;gap:7px;border:0;background:transparent;padding:10px 17px;border-radius:9px;font-size:13px;color:var(--text-secondary);font-weight:500;white-space:nowrap;transition:background .16s,color .16s}
+.topnav .tab:hover,.guide-link:hover{background:var(--primary-light);color:var(--primary)}.topnav .tab.active{background:var(--primary-light);color:var(--primary);font-weight:650}
+.topnav .provider-icon{width:16px;height:16px}.topbar-right{margin-left:auto}.badge-safe{font-size:11px;color:var(--text-secondary);white-space:nowrap}.badge-safe:before{content:'';display:inline-block;width:6px;height:6px;margin-right:8px;border-radius:50%;background:#65996d}
+.container{max-width:1224px;margin:auto;padding:28px 32px 36px}
+.store-heading{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px}.store-heading h2{font-size:20px;font-weight:600;letter-spacing:-.5px}.store-heading p{font-size:11px;color:var(--text-secondary);margin-top:4px}.store-heading>a{font-size:12px;color:var(--text-secondary)}
+.alert-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid #e1e7da;background:#f0f3e9;border-radius:10px;padding:12px 16px;margin-bottom:22px;color:#556348;font-size:11px;cursor:pointer}
+.alert-banner>span:first-child{display:flex;align-items:center;gap:9px}.alert-banner svg{width:15px;height:15px;flex-shrink:0}.notice-action{white-space:nowrap;font-size:11px}
+#tab-giftcard,#tab-ai{scroll-margin-top:98px}.grid{display:grid;grid-template-columns:1.15fr 1fr;gap:22px;align-items:start}
+.card{background:var(--card-bg);border:1px solid var(--border);padding:27px;border-radius:var(--radius);box-shadow:var(--shadow);min-width:0}
+.card h2{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;margin-bottom:9px;letter-spacing:-.2px}.section-index{font-size:10px;color:var(--text-secondary);font-weight:500;display:grid;place-items:center;width:24px;height:24px;border:1px solid var(--border);border-radius:7px;font-variant-numeric:tabular-nums}
+.section-description{font-size:11px;color:var(--text-secondary);margin-bottom:24px}.catalog-card{min-height:390px}.checkout-card h2{margin-bottom:17px}
+.product-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;max-height:580px;overflow-y:auto;padding:2px 2px 4px}
+.product-item{position:relative;display:block;text-align:left;border:1px solid var(--border);border-radius:12px;padding:17px 12px;background:#fff;transition:border-color .16s,background .16s,transform .16s;min-width:0}
+.product-item:hover{border-color:#9bb59c;transform:translateY(-2px)}.product-item.selected{border-color:var(--primary);background:#f0f6ee;box-shadow:inset 0 0 0 .5px var(--primary)}
+.product-item.selected:after{content:'✓';position:absolute;right:10px;top:10px;font-size:10px;color:#fff;width:16px;height:16px;display:grid;place-items:center;background:var(--primary);border-radius:50%}
+.product-mark{display:grid;place-items:center;width:31px;height:31px;border-radius:9px;background:#f2f4ef;margin-bottom:14px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",emoji;font-size:25px;line-height:1;font-weight:400}.product-item.selected .product-mark{background:#e1ebda}
+.product-name{font-weight:550;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.catalog-note{border-top:1px solid var(--border);padding-top:18px;margin-top:24px;font-size:11px;color:var(--text-secondary);display:flex;gap:8px}.catalog-note span{color:var(--primary)}
+.plan-item{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:14px;align-items:center;width:100%;padding:19px 17px;text-align:left;border:1px solid var(--border);border-radius:12px;margin-bottom:12px;background:#fff;transition:border-color .16s,background .16s}
+.plan-item:hover{background:#fafcf8;border-color:#a3baa2}.plan-item.selected{border-color:var(--primary);background:var(--primary-light);box-shadow:inset 0 0 0 .5px var(--primary)}.plan-name{display:block;font-size:14px;font-weight:550;margin-bottom:4px}.plan-subtitle{display:block;color:var(--text-secondary);font-size:11px}.plan-price{font-size:20px;font-weight:550;letter-spacing:-.6px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.provider-icon{width:24px;height:24px;flex-shrink:0}.provider-icon.claude{color:#b47050}.selection-heading{display:flex;align-items:center;gap:10px}.selection-heading .provider-icon{width:20px;height:20px}
+#selectedProduct,#selectedPlan{font-size:12px;background:#f7f9f5;padding:10px 12px;border-radius:8px;border:1px solid #edf0e8;min-height:42px}
+.form-group{margin-bottom:19px}.form-group label{display:block;margin-bottom:8px;font-size:11px;font-weight:550}
+.form-group input,.form-group textarea,.form-group select,.modal input,.modal textarea{width:100%;padding:12px 13px;background:#fff;border:1px solid var(--border-strong);border-radius:9px;outline:none;font-size:12px;transition:border-color .16s,box-shadow .16s;min-width:0}
+input::placeholder,textarea::placeholder{color:#8a968d;font-size:11px}.form-group textarea{resize:vertical;min-height:120px;font-family:ui-monospace,SFMono-Regular,monospace;font-size:11px}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus,.modal input:focus,.modal textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px #245c4510}
+.amount-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.amount-chip{border:1px solid var(--border-strong);border-radius:9px;padding:11px 5px;min-width:0;text-align:center;background:#fff;transition:background .16s,border-color .16s}.amount-chip:hover{border-color:#90ac8c}.amount-chip.selected{border-color:var(--primary);background:var(--primary-light)}.chip-amt{font-size:12px;font-weight:550}.chip-price{font-size:10px;color:var(--text-secondary);margin-top:3px}
+.btn{width:100%;border:0;border-radius:10px;padding:14px 20px;background:var(--primary);color:#fff;font-weight:550;font-size:13px;transition:background .16s,transform .16s;letter-spacing:.4px}.btn:hover{background:var(--primary-hover)}.btn:active{transform:translateY(1px)}.btn:disabled{background:#e8ede5;color:#7c887b}.checkout-footnote{margin-top:12px;text-align:center;color:var(--text-muted);font-size:10px}
+.session-link,#claudeCredential a{color:var(--primary);text-decoration:underline;text-underline-offset:3px}#claudeCredential>p{padding:16px;background:var(--primary-light);border-radius:10px;color:var(--text-secondary);font-size:12px;margin-bottom:20px}#chatgptInstructions{font-size:12px}
+.price-box{background:#f7f9f3;border:1px solid #e6ecdf;border-radius:12px;padding:16px;margin-bottom:17px}.price-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10px;color:var(--text-secondary)}.price-row>span:last-child{min-width:0;overflow-wrap:anywhere}.price-row.total{border-top:1px dashed #d7e0ce;padding-top:13px;margin-top:13px;color:var(--text);font-size:12px}.price-row.total>span:last-child{font-size:25px;color:var(--primary);font-weight:600;letter-spacing:-1px}.price-note{font-size:10px;line-height:1.7;color:#788367;margin:9px 0 0}.copy-btn{border:0;background:transparent;color:var(--primary);font-size:10px;padding:3px 5px;margin-left:4px}
+.guide-card{margin-top:26px;background:#f0f3eb;box-shadow:none;border-color:#e3e8dd}.guide-card h2{margin-bottom:21px}.guide-content{display:grid;grid-template-columns:1fr 1fr;gap:20px 48px;font-size:12px;color:var(--text-secondary)}.guide-column h3{color:var(--text);font-size:13px;font-weight:550;margin-bottom:12px}.guide-content ol{padding-left:20px}.guide-content li{padding-left:4px;margin:8px 0}.guide-content li::marker{color:#829578;font-size:10px}.guide-notice{grid-column:1/-1;border-top:1px solid #dfe6d7;padding-top:16px;margin-top:2px;font-size:11px;color:#6f7b65}
+.orders-card{margin-top:22px!important}.orders-card h2{margin-bottom:5px}.order-list{max-height:580px;overflow-y:auto}.order-list:has(>div:only-child:not(.order-item)){padding:28px 14px 32px;text-align:center;border:1px dashed var(--border-strong);background:#fbfcf9;border-radius:12px;color:var(--text-secondary);font-size:12px;margin-top:20px}
+.order-item{padding:20px 0;border-bottom:1px solid var(--border);font-size:12px;overflow-wrap:anywhere}.order-item:last-child{border:0}.order-item>div:first-child{font-weight:550;font-size:13px;margin-bottom:8px}.order-item>div:nth-child(2){color:var(--text-secondary);white-space:pre-line;line-height:1.9;font-size:11px}.order-item>p{margin-top:12px;background:var(--warning-light);padding:10px;border-radius:8px;color:var(--warning);font-size:11px}
+.order-status{display:inline-block;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:400;margin-left:8px;background:var(--primary-light);color:var(--primary)}
+.mini-btn{padding:7px 12px;border:1px solid var(--border-strong);background:#fff;color:var(--primary);border-radius:7px;font-size:11px;margin:12px 7px 0 0}.mini-btn:hover{background:var(--primary-light)}.order-error{text-align:center;padding:18px;color:var(--text-secondary)}.order-error{color:var(--danger)}
+.site-footer{display:flex;justify-content:space-between;gap:16px;border-top:1px solid var(--border);margin-top:34px;padding-top:24px;font-size:10px;color:var(--text-muted)}.site-footer strong{font-weight:500;color:var(--text-secondary)}.footer-links{display:flex;gap:20px}
+.contact-float{position:fixed;right:24px;bottom:26px;z-index:900}.contact-trigger{display:flex;align-items:center;gap:8px;background:#fff;color:var(--primary);padding:12px 16px;border:1px solid var(--border-strong);border-radius:30px;box-shadow:0 4px 16px #2339230c;font-size:12px;font-weight:550;touch-action:manipulation}.contact-trigger svg{width:17px;height:17px}.contact-trigger:hover{background:var(--primary-light)}
+.contact-card{position:absolute;right:0;bottom:58px;width:225px;padding:14px;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 32px #23392316;opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .18s,transform .18s,visibility .18s}.contact-float:hover .contact-card,.contact-float:focus-within .contact-card{opacity:1;visibility:visible;transform:none}.contact-card img{width:100%;height:auto;border-radius:8px}.contact-card p{font-size:11px;color:var(--text-secondary);text-align:center;margin-top:8px}
+.modal-mask{position:fixed;inset:0;z-index:1000;background:#1c2d2473;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}.modal{background:#fff;width:100%;max-width:440px;max-height:calc(100dvh - 40px);overflow:auto;padding:30px;border-radius:20px;text-align:center;box-shadow:0 24px 80px #10291d33}.modal h2{font-size:20px;font-weight:600;margin-bottom:16px}.modal>p{font-size:12px;color:var(--text-secondary);margin-bottom:15px}.modal .pay-amount strong{font-size:29px;color:var(--primary);font-weight:600}.modal .pay-tip{font-size:12px;color:var(--text-secondary);margin:12px 0 16px}.modal .pay-countdown{padding:9px;background:var(--warning-light);border-radius:8px;font-size:12px;color:var(--warning);margin-bottom:16px}.modal img.qr{display:block;margin:0 auto;width:min(240px,100%);height:auto;aspect-ratio:1;border:1px solid var(--border);padding:8px;border-radius:12px}.modal .pay-status{font-size:12px;line-height:1.8;margin-top:14px;color:var(--text-secondary)}.pay-actions{display:flex;justify-content:center;gap:8px}.modal .modal-close{border:1px solid var(--border-strong);background:#fff;border-radius:8px;font-size:11px;padding:9px 14px;margin:12px 3px 0}.modal .modal-btn{width:100%;border:0;border-radius:9px;background:var(--primary);color:#fff;font-size:13px;padding:13px;margin-top:8px}.modal input,.modal textarea{margin-bottom:13px}.modal label{display:block;font-size:12px;text-align:left;margin-bottom:6px}.modal input.code-input{font-size:22px;letter-spacing:9px;text-align:center}.modal textarea.token-input{min-height:150px;font-family:monospace}.contact-modal-qr{max-width:100%;width:300px;max-height:60vh;object-fit:contain;border-radius:12px}
+.credential-modal-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;text-align:left}.modal .credential-modal-header h2{margin:0;min-width:0}.modal .modal-dismiss{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text-secondary);font-size:26px;line-height:1}.modal .modal-dismiss:hover{background:var(--primary-light);color:var(--primary);border-color:var(--border-strong)}
+#toast-wrap{position:fixed;left:50%;top:22px;transform:translateX(-50%);z-index:2000;display:flex;align-items:center;flex-direction:column;gap:10px;pointer-events:none}.toast{max-width:90vw;background:#273e30;color:#fff;padding:11px 20px;font-size:12px;border-radius:10px;box-shadow:0 6px 24px #19332122;animation:toastIn .2s ease,toastOut .2s ease 2.45s forwards}.toast.error{background:#a24d45}.toast.success{background:#2a6747}@keyframes toastIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}@keyframes toastOut{to{opacity:0;transform:translateY(-8px)}}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:#cbd6c6;border-radius:4px}::-webkit-scrollbar-track{background:transparent}
+@media(min-width:1080px){.checkout-card{padding:28px 30px}}
+@media(max-width:1000px){.topbar-inner{gap:24px}.topbar-right{display:none}.product-list{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:1fr 1fr;gap:18px}.card{padding:22px}.amount-chips{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){html{scroll-padding-top:130px}.topbar-inner{padding:15px 20px 0;flex-wrap:wrap;gap:13px}.brand-logo{width:34px;height:34px;border-radius:10px}.brand-name{font-size:15px}.brand-sub{font-size:8px}.topnav{width:100%;border-top:1px solid var(--border);padding:9px 0;gap:3px}.topnav .tab{flex:1;justify-content:center;padding:9px 10px;font-size:12px}.guide-link{padding:9px 10px;font-size:11px}.container{padding:24px 20px 90px}.store-heading{margin-bottom:15px}.store-heading h2{font-size:18px}.store-heading>a{font-size:11px}.alert-banner{padding:12px;font-size:10px;gap:8px;margin-bottom:17px}.notice-action{display:none}.grid{grid-template-columns:1fr;gap:16px}.card{padding:21px;border-radius:15px}.catalog-card{min-height:0}.product-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-height:none}.product-item{padding:13px 9px}.product-name{font-size:11px}.product-price{font-size:9px}.product-mark{width:28px;height:28px;margin-bottom:10px}.catalog-note{margin-top:19px;padding-top:15px;font-size:10px}.section-description{margin-bottom:18px}.amount-chips{grid-template-columns:repeat(3,minmax(0,1fr))}.form-group input,.form-group textarea,.modal input,.modal textarea{font-size:16px}.guide-card{margin-top:20px}.guide-content{grid-template-columns:1fr;gap:18px}.guide-notice{font-size:10px}.site-footer{flex-direction:column;font-size:10px;gap:10px;margin-top:25px}.contact-float{right:16px;bottom:17px}.contact-trigger{padding:11px 14px;font-size:11px}.contact-card{display:none}.modal{padding:25px 20px}.plan-item{padding:17px 14px;gap:11px}.plan-price{font-size:18px}#tab-giftcard,#tab-ai{scroll-margin-top:145px}}
+@media(max-width:370px){.container{padding-left:14px;padding-right:14px}.card{padding:17px}.product-list{grid-template-columns:repeat(2,minmax(0,1fr))}.guide-link{padding-left:5px;padding-right:5px}.topnav .provider-icon{width:13px;height:13px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media(prefers-contrast:more){:root{--text-secondary:#3c5041;--text-muted:#516251;--border-strong:#81927b}.product-item,.plan-item{border-color:#81927b}}
+
+</style>
+</head>
+<body>
+<!-- Brand marks from Lobe Icons (MIT). -->
+<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+<symbol id="icon-chatgpt" viewBox="0 0 24 24"><path fill="currentColor" d="M9.205 8.658v-2.26c0-.19.072-.333.238-.428l4.543-2.616c.619-.357 1.356-.523 2.117-.523 2.854 0 4.662 2.212 4.662 4.566 0 .167 0 .357-.024.547l-4.71-2.759a.797.797 0 00-.856 0l-5.97 3.473zm10.609 8.8V12.06c0-.333-.143-.57-.429-.737l-5.97-3.473 1.95-1.118a.433.433 0 01.476 0l4.543 2.617c1.309.76 2.189 2.378 2.189 3.948 0 1.808-1.07 3.473-2.76 4.163zM7.802 12.703l-1.95-1.142c-.167-.095-.239-.238-.239-.428V5.899c0-2.545 1.95-4.472 4.591-4.472 1 0 1.927.333 2.712.928L8.23 5.067c-.285.166-.428.404-.428.737v6.898zM12 15.128l-2.795-1.57v-3.33L12 8.658l2.795 1.57v3.33L12 15.128zm1.796 7.23c-1 0-1.927-.332-2.712-.927l4.686-2.712c.285-.166.428-.404.428-.737v-6.898l1.974 1.142c.167.095.238.238.238.428v5.233c0 2.545-1.974 4.472-4.614 4.472zm-5.637-5.303l-4.544-2.617c-1.308-.761-2.188-2.378-2.188-3.948A4.482 4.482 0 014.21 6.327v5.423c0 .333.143.571.428.738l5.947 3.449-1.95 1.118a.432.432 0 01-.476 0zm-.262 3.9c-2.688 0-4.662-2.021-4.662-4.519 0-.19.024-.38.047-.57l4.686 2.71c.286.167.571.167.856 0l5.97-3.448v2.26c0 .19-.07.333-.237.428l-4.543 2.616c-.619.357-1.356.523-2.117.523zm5.899 2.83a5.947 5.947 0 005.827-4.756C22.287 18.339 24 15.84 24 13.296c0-1.665-.713-3.282-1.998-4.448.119-.5.19-.999.19-1.498 0-3.401-2.759-5.947-5.946-5.947-.642 0-1.26.095-1.88.31A5.962 5.962 0 0010.205 0a5.947 5.947 0 00-5.827 4.757C1.713 5.447 0 7.945 0 10.49c0 1.666.713 3.283 1.998 4.448-.119.5-.19 1-.19 1.499 0 3.401 2.759 5.946 5.946 5.946.642 0 1.26-.095 1.88-.309a5.96 5.96 0 004.162 1.713z"/></symbol>
+<symbol id="icon-claude" viewBox="0 0 24 24"><path fill="currentColor" d="M4.709 15.955l4.72-2.647.08-.23-.08-.128H9.2l-.79-.048-2.698-.073-2.339-.097-2.266-.122-.571-.121L0 11.784l.055-.352.48-.321.686.06 1.52.103 2.278.158 1.652.097 2.449.255h.389l.055-.157-.134-.098-.103-.097-2.358-1.596-2.552-1.688-1.336-.972-.724-.491-.364-.462-.158-1.008.656-.722.881.06.225.061.893.686 1.908 1.476 2.491 1.833.365.304.145-.103.019-.073-.164-.274-1.355-2.446-1.446-2.49-.644-1.032-.17-.619a2.97 2.97 0 01-.104-.729L6.283.134 6.696 0l.996.134.42.364.62 1.414 1.002 2.229 1.555 3.03.456.898.243.832.091.255h.158V9.01l.128-1.706.237-2.095.23-2.695.08-.76.376-.91.747-.492.584.28.48.685-.067.444-.286 1.851-.559 2.903-.364 1.942h.212l.243-.242.985-1.306 1.652-2.064.73-.82.85-.904.547-.431h1.033l.76 1.129-.34 1.166-1.064 1.347-.881 1.142-1.264 1.7-.79 1.36.073.11.188-.02 2.856-.606 1.543-.28 1.841-.315.833.388.091.395-.328.807-1.969.486-2.309.462-3.439.813-.042.03.049.061 1.549.146.662.036h1.622l3.02.225.79.522.474.638-.079.485-1.215.62-1.64-.389-3.829-.91-1.312-.329h-.182v.11l1.093 1.068 2.006 1.81 2.509 2.33.127.578-.322.455-.34-.049-2.205-1.657-.851-.747-1.926-1.62h-.128v.17l.444.649 2.345 3.521.122 1.08-.17.353-.608.213-.668-.122-1.374-1.925-1.415-2.167-1.143-1.943-.14.08-.674 7.254-.316.37-.729.28-.607-.461-.322-.747.322-1.476.389-1.924.315-1.53.286-1.9.17-.632-.012-.042-.14.018-1.434 1.967-2.18 2.945-1.726 1.845-.414.164-.717-.37.067-.662.401-.589 2.388-3.036 1.44-1.882.93-1.086-.006-.158h-.055L4.132 18.56l-1.13.146-.487-.456.061-.746.231-.243 1.908-1.312-.006.006z"/></symbol>
+</svg>
+<header class="topbar">
+    <div class="topbar-inner">
+        <div class="brand">
+            <span class="brand-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M7 15h4M7 3h10"/></svg></span>
+            <div class="brand-text">
+                <h1 class="brand-name">AI 能量站</h1>
+                <span class="brand-sub">YOUR DIGITAL STORE</span>
+            </div>
+        </div>
+        <nav class="topnav">
+            <button type="button" class="tab active" data-tab="giftcard">Apple 礼品卡</button>
+            <button type="button" class="tab" data-tab="ai"><svg class="provider-icon" aria-hidden="true"><use href="#icon-chatgpt"/></svg><svg class="provider-icon claude" aria-hidden="true"><use href="#icon-claude"/></svg>AI 代充</button>
+            <a class="guide-link" href="#guide">订阅指南</a>
+        </nav>
+        <div class="topbar-right">
+            <span class="badge-safe">数字服务，一站直达</span>
+        </div>
+    </div>
+</header>
+
+<div class="contact-float">
+    <button class="contact-trigger" type="button" aria-label="联系客服" onclick="openContactModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 18l-2 3v-9a9 9 0 119 9H8"/><path d="M8 10h8M8 14h5"/></svg>联系客服</button>
+    <div class="contact-card" role="dialog" aria-label="客服二维码">
+        <img src="/contact-qrcode.jpg" alt="客服微信二维码">
+        <p>扫码添加客服微信</p>
+    </div>
+</div>
+
+<div class="modal-mask hidden" id="contactModal" onclick="if(event.target===this) closeContactModal()">
+    <div class="modal">
+        <h2>联系客服</h2>
+        <img class="contact-modal-qr" src="/contact-qrcode.jpg" alt="客服微信二维码">
+        <p class="pay-tip">扫码添加客服微信</p>
+        <button class="modal-close" onclick="closeContactModal()">关闭</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="store-heading" id="shop"><div><h2>挑选你的数字好物</h2><p>选好所需服务，接下来交给我们。</p></div><a href="#orders">我的订单 ↗</a></div>
+    <a class="alert-banner" href="#orders">
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>小提醒：请私下保存订单恢复链接，方便换设备查询与继续操作。</span><span class="notice-action">查看订单 →</span>
+    </a>
+
+    <!-- 礼品卡 Tab -->
+    <div id="tab-giftcard">
+        <div class="grid">
+            <div class="card catalog-card">
+                <h2><span class="section-index">01</span> 选择充值地区</h2>
+                <p class="section-description">选择与你的 Apple ID 一致的国家或地区。</p>
+                <div class="product-list" id="productList">正在准备商品...</div>
+                <div class="catalog-note"><span>ⓘ</span> 不同地区的礼品卡通常不可混用，请核对账号地区。</div>
+            </div>
+
+            <div class="card checkout-card">
+                <h2><span class="section-index">02</span> 确认充值信息</h2>
+                <div id="selectedProduct" style="color: var(--text-secondary); margin-bottom: 16px;">请先选择充值地区</div>
+
+                <div class="form-group">
+                    <label>面值</label>
+                    <div class="amount-chips" id="amountChips"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="account">Apple ID 账号（可付款后再提交）</label>
+                    <input type="email" id="account" placeholder="请输入 Apple ID 邮箱" autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Apple ID 密码</label>
+                    <input type="password" id="password" placeholder="请输入 Apple ID 密码" autocomplete="off">
+                </div>
+
+                <div class="price-box" id="priceBox" style="display:none;">
+                    <div class="price-row">
+                        <span>订单号</span>
+                        <span>
+                            <span id="orderNo" style="font-family: monospace; font-size: 13px;"></span>
+                            <button class="copy-btn" onclick="copyText(document.getElementById('orderNo').textContent)">复制</button>
+                        </span>
+                    </div>
+                    <div class="price-note">提交后将生成正式订单，请保存订单恢复链接。</div>
+                    <div class="price-row" style="margin-top:12px;">
+                        <span>原价</span>
+                        <span id="originalPrice">—</span>
+                    </div>
+                    <div class="price-row total">
+                        <span>预估应付</span>
+                        <span id="sellPrice">¥0</span>
+                    </div>
+                </div>
+
+                <button class="btn" id="submitBtn" disabled>立即充值</button>
+                <p class="checkout-footnote">支持支付宝付款 · 账号信息也可付款后补交</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 代充 Tab -->
+    <div id="tab-ai" class="hidden">
+        <div class="grid">
+            <div class="card catalog-card">
+                <h2><span class="section-index">01</span> 选择 AI 代充</h2>
+                <p class="section-description">让灵感与效率，都多一种打开方式。</p>
+                <div id="planList">正在准备套餐...</div>
+                <div class="catalog-note"><span>ⓘ</span> 请确认套餐类型与目标账号，付款后可查看处理进度。</div>
+            </div>
+
+            <div class="card checkout-card">
+                <h2><span class="section-index">02</span> 确认代充信息</h2>
+                <div id="selectedPlan" class="selection-heading" style="color: var(--text-secondary); margin-bottom: 16px;">请先选择代充套餐</div>
+
+                <!-- 步骤说明 -->
+                <div id="chatgptInstructions" style="background: var(--primary-light); border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                    <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                        <div style="width: 24px; height: 24px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">1</div>
+                        <div>
+                            <div style="font-weight: 500; margin-bottom: 4px;">先登录你要充值的 ChatGPT 账号</div>
+                            <div style="color: var(--text-secondary); font-size: 13px;">请确认你在 chatgpt.com 登录的是本次要充值的账号，<a class="session-link" href="https://chatgpt.com/api/auth/session" target="_blank" rel="noopener noreferrer">再复制完整 Session JSON</a>。</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <div style="width: 24px; height: 24px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">2</div>
+                        <div>
+                            <div style="font-weight: 500; margin-bottom: 4px;">粘贴账号 Session JSON</div>
+                            <div style="color: var(--text-secondary); font-size: 13px;">将复制的完整 JSON 粘贴到下方输入框</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" id="chatgptCredential">
+                    <label for="aiToken">账号 Session JSON</label>
+                    <textarea id="aiToken" placeholder='粘贴待充值账号的完整 JSON（自动检测格式）' style="min-height: 120px;"></textarea>
+                </div>
+                <div id="claudeCredential" class="hidden">
+                    <p>请确认已登录要充值的 Claude 账号，在 <a href="https://claude.ai/settings/account" target="_blank" rel="noopener noreferrer">账号设置</a> 复制 Organization ID。请核对目标账号，充值后无法更换。</p>
+                    <div class="form-group"><label for="organizationId">Organization ID</label><input id="organizationId" autocomplete="off"></div>
+                    <div class="form-group"><label for="organizationConfirm">再次输入 Organization ID</label><input id="organizationConfirm" autocomplete="off"></div>
+                </div>
+
+                <div class="price-box" id="aiPriceBox" style="display:none;">
+                    <div class="price-row">
+                        <span>订单号</span>
+                        <span>
+                            <span id="aiOrderNo" style="font-family: monospace; font-size: 13px;"></span>
+                            <button class="copy-btn" onclick="copyText(document.getElementById('aiOrderNo').textContent)">复制</button>
+                        </span>
+                    </div>
+                    <div class="price-note">提交后将生成正式订单，请保存订单恢复链接。</div>
+                    <div class="price-row total">
+                        <span>应付金额</span>
+                        <span id="aiSellPrice">¥0</span>
+                    </div>
+                </div>
+
+                <button class="btn" id="aiSubmitBtn" disabled>立即代充</button>
+                <p class="checkout-footnote">支持支付宝付款 · 请核对目标充值账号</p>
+            </div>
+        </div>
+    </div>
+
+    <section id="guide" class="card guide-card">
+        <h2>第一次使用？从这里开始。</h2>
+        <div class="guide-content">
+            <div class="guide-column"><h3>01 / Apple 礼品卡充值</h3>
+            <ol>
+                <li>选择国家 / 地区和礼品卡面值。</li>
+                <li>填写需要充值的 Apple ID，确认账号地区与所选礼品卡一致。</li>
+                <li>提交订单并使用支付宝完成付款，保存订单恢复链接。</li>
+                <li>如果 Apple 设备要求验证码，请在订单提示中提交 6 位验证码。</li>
+            </ol>
+            </div><div class="guide-column"><h3>02 / AI 代充</h3>
+            <ol>
+                <li>选择 ChatGPT 或 Claude 套餐，并确认目标账号。</li>
+                <li>按对应套餐提示填写 Session JSON 或 Organization ID。</li>
+                <li>付款后等待订单状态更新，不要重复下单。</li>
+            </ol>
+            </div><div class="guide-notice">付款后请保存订单恢复链接，换设备可用链接恢复查询；链接请勿转发给他人。</div>
+        </div>
+    </section>
+
+    <!-- 订单列表 -->
+    <div class="card orders-card" id="orders">
+        <h2>我的订单</h2>
+        <p class="section-description">每一步进度，都在这里。换设备时请使用已保存的恢复链接。</p>
+        <div class="order-list" id="orderList">加载中...</div>
+    </div>
+<footer class="site-footer"><span><strong>AI 能量站</strong> &nbsp; / &nbsp; 为数字生活，多添一份可能。</span><div class="footer-links"><a href="#guide">使用指南</a><a href="#orders">订单查询</a><span>DIGITAL GOODS, SIMPLY.</span></div></footer>
+</div>
+
+<div id="toast-wrap"></div>
+
+<script>
+// XSS 转义
+function esc(s) {
+    if (!s) return '';
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// 一键复制
+function copyText(text) {
+    if (!navigator.clipboard) { prompt('请手动复制：', text); return; }
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('订单号已复制！请妥善保存', 'success');
+    }).catch(() => {
+        prompt('请手动复制订单号：', text);
+    });
+}
+
+// 轻提示（替代生硬的 alert）
+function showToast(msg, type='') {
+    let wrap = document.getElementById('toast-wrap');
+    if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.id = 'toast-wrap';
+        document.body.appendChild(wrap);
+    }
+    const t = document.createElement('div');
+    t.className = 'toast ' + type;
+    t.textContent = msg;
+    wrap.appendChild(t);
+    setTimeout(() => t.remove(), 2700);
+}
+
+function openContactModal() {
+    document.getElementById('contactModal').classList.remove('hidden');
+}
+
+function closeContactModal() {
+    document.getElementById('contactModal').classList.add('hidden');
+}
+
+let products = [];
+let selectedProduct = null;
+let selectedAmount = null;
+let plans = [];
+let selectedPlan = null;
+let activeOrders = [];
+const ORDER_STORAGE_PREFIX = 'ai-energy-hub:order:';
+const LEGACY_ORDER_STORAGE_PREFIX = 'ai-energy-hub:legacy-order:';
+
+function savedOrderRecord(value) {
+    if (!value || !Number.isSafeInteger(value.id) || value.id <= 0 ||
+        typeof value.access_token !== 'string' || !value.access_token) return null;
+    return {id:value.id, access_token:value.access_token,
+        saved_at:Number.isFinite(value.saved_at) ? value.saved_at : 0};
+}
+
+function readSavedOrders() {
+    const records = new Map();
+    try {
+        const legacy = JSON.parse(localStorage.getItem('activeOrders') || '[]');
+        if (Array.isArray(legacy)) legacy.slice(0, 100).forEach((value, index) => {
+            const entry = savedOrderRecord(value);
+            if (!entry) return;
+            entry.saved_at = entry.saved_at || legacy.length - index;
+            records.set(entry.id, entry);
+            // Separate backup keys keep an old tab's migration from overwriting
+            // a newly saved canonical record, even when both tabs use the same ID.
+            try {
+                const key = LEGACY_ORDER_STORAGE_PREFIX + entry.id;
+                if (localStorage.getItem(key) === null) localStorage.setItem(key, JSON.stringify(entry));
+            } catch (_) { /* the original legacy array remains available */ }
+        });
+    } catch (_) { /* corrupt legacy data must not hide independent records */ }
+    try {
+        const keys = [];
+        for (let i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i));
+        for (const prefix of [LEGACY_ORDER_STORAGE_PREFIX, ORDER_STORAGE_PREFIX]) {
+            for (const key of keys) {
+                if (typeof key !== 'string' || !key.startsWith(prefix)) continue;
+                try {
+                    const entry = savedOrderRecord(JSON.parse(localStorage.getItem(key)));
+                    if (entry && key === prefix + entry.id) records.set(entry.id, entry);
+                } catch (_) { /* one malformed record does not discard the others */ }
+            }
+        }
+    } catch (_) { /* disabled storage still permits the current in-memory order */ }
+    return [...records.values()];
+}
+
+function syncSavedOrders() {
+    const merged = new Map(activeOrders.map(entry => [entry.id, entry]));
+    for (const entry of readSavedOrders()) {
+        const current = merged.get(entry.id);
+        if (!current || entry.saved_at >= current.saved_at) merged.set(entry.id, entry);
+    }
+    activeOrders = [...merged.values()].sort((a,b) => b.saved_at - a.saved_at || b.id - a.id).slice(0, 100);
+}
+
+syncSavedOrders();
+if (typeof window.addEventListener === 'function') {
+    window.addEventListener('storage', event => {
+        if (event.key === null || event.key === 'activeOrders' ||
+            (typeof event.key === 'string' && (event.key.startsWith(ORDER_STORAGE_PREFIX) || event.key.startsWith(LEGACY_ORDER_STORAGE_PREFIX)))) syncSavedOrders();
+    });
+    window.addEventListener('focus', syncSavedOrders);
+}
+
+// A checkout key is a private capability: persist only its random value and
+// non-sensitive product selection, never the account/password/AI credential.
+const checkoutIntents = new Map();
+const checkoutActions = new Map();
+function checkoutIntent(path, body) {
+    const selection = JSON.stringify(path === '/api/create-ai-order' ? [body.plan_id] : [body.product_id, Number(body.amount)]);
+    const slot = 'ai-energy-hub:checkout:' + path + ':' + selection;
+    let entry = checkoutIntents.get(slot);
+    if (!entry) {
+        try { entry = JSON.parse(window.sessionStorage.getItem(slot)); } catch (_) {}
+    }
+    if (!entry || entry.selection !== selection || !/^[0-9a-f]{64}$/.test(entry.key || '')) entry = null;
+    if (entry && entry.completed && window.confirm('该商品已创建过订单。确定另下一单？取消将打开原订单。')) entry = null;
+    if (!entry) {
+        const bytes = new Uint8Array(32);
+        window.crypto.getRandomValues(bytes);
+        entry = {selection, key:Array.from(bytes, b => b.toString(16).padStart(2, '0')).join(''), completed:false};
+    }
+    checkoutIntents.set(slot, entry);
+    try { window.sessionStorage.setItem(slot, JSON.stringify(entry)); }
+    catch (_) { showToast('浏览器未保存下单凭证，重试前请保留当前页面'); }
+    return entry;
+}
+
+async function checkoutPost(path, body) {
+    if (checkoutActions.has(path)) return checkoutActions.get(path);
+    const entry = checkoutIntent(path, body);
+    const task = (async () => {
+        const response = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json', 'Idempotency-Key':entry.key}, body:JSON.stringify(body)});
+        const result = await response.json();
+        if (result.code === 0) {
+            rememberOrder(result.data);
+            entry.completed = true;
+            try { window.sessionStorage.setItem('ai-energy-hub:checkout:' + path + ':' + entry.selection, JSON.stringify(entry)); } catch (_) {}
+        }
+        // A transport failure / 409 / 5xx never rotates the key. Retrying the
+        // same intent asks the server for its original result, not a new charge.
+        return result;
+    })();
+    checkoutActions.set(path, task);
+    try { return await task; } finally { checkoutActions.delete(path); }
+}
+
+const pendingActions = new Map();
+async function orderPost(path, id, fields = {}) {
+    const key = path + ':' + id;
+    if (pendingActions.has(key)) return pendingActions.get(key);
+    syncSavedOrders();
+    const token = activeOrders.find(o => o.id === id)?.access_token;
+    if (!token) throw new Error('请使用已保存的订单恢复链接');
+    const task = (async () => {
+        const response = await fetch(path, {method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({...fields, order_id: id, access_token: token})});
+        return response.json();
+    })();
+    pendingActions.set(key, task);
+    try { return await task; } finally { pendingActions.delete(key); }
+}
+
+function copyRecoveryLink(id) {
+    syncSavedOrders();
+    const order = activeOrders.find(o => o.id === id);
+    if (!order) return;
+    const fragment = new URLSearchParams({order: String(id), token: order.access_token});
+    copyText(location.origin + location.pathname + '#' + fragment);
+}
+
+function restoreOrderLink() {
+    const params = new URLSearchParams(location.hash.slice(1));
+    const id = Number(params.get('order'));
+    const token = params.get('token');
+    if (Number.isSafeInteger(id) && id > 0 && /^[A-Za-z0-9_-]{32,128}$/.test(token || '')) {
+        rememberOrder({id, access_token: token});
+        history.replaceState(null, '', location.pathname + location.search);
+        showToast('订单访问凭证已恢复');
+    }
+}
+
+function rememberOrder(data) {
+    const entry = savedOrderRecord({...data, saved_at:Date.now()});
+    if (!entry) return;
+    activeOrders = [entry, ...activeOrders.filter(item => item.id !== entry.id)].slice(0, 100);
+    // Write only this order. Never replace another tab's complete order list.
+    try { localStorage.setItem(ORDER_STORAGE_PREFIX + entry.id, JSON.stringify(entry)); }
+    catch (_) { showToast('浏览器未保存订单，请复制订单恢复链接'); }
+    syncSavedOrders();
+}
+
+// Tab 切换
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.onclick = () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const tabName = tab.dataset.tab;
+        document.getElementById('tab-giftcard').classList.toggle('hidden', tabName !== 'giftcard');
+        document.getElementById('tab-ai').classList.toggle('hidden', tabName !== 'ai');
+        const panel = document.getElementById(tabName === 'giftcard' ? 'tab-giftcard' : 'tab-ai');
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+});
+
+// ===== 礼品卡 =====
+async function loadProducts() {
+    try {
+        const r = await fetch('/api/products');
+        const d = await r.json();
+        products = d.data;
+        renderProducts();
+    } catch (e) {
+        document.getElementById('productList').innerHTML = '加载失败，请刷新重试';
+    }
+}
+
+function productFlag(product) {
+    // The upstream country field can be a sales category (e.g. 代加), not a country.
+    // Prefer the flag already present in the product name; never infer it from currency.
+    for (const value of [product.name, product.country]) {
+        if (typeof value !== 'string') continue;
+        const flag = value.match(/[\u{1F1E6}-\u{1F1FF}]{2}/u);
+        if (flag) return flag[0];
+    }
+    return '🌐';
+}
+
+function renderProducts() {
+    const list = document.getElementById('productList');
+    if (!products.length) {
+        list.innerHTML = '暂无商品';
+        return;
+    }
+    list.innerHTML = products.map(p => `
+        <button type="button" class="product-item" aria-pressed="false" data-id="${Number(p.id)}">
+            <span class="product-mark" aria-hidden="true">${productFlag(p)}</span>
+            <div class="product-name">${esc(p.name)}</div>
+        </button>
+    `).join('');
+
+    document.querySelectorAll('.product-item').forEach(el => {
+        el.onclick = () => selectProduct(parseInt(el.dataset.id));
+    });
+}
+
+function selectProduct(pid) {
+    selectedProduct = products.find(p => p.id === pid);
+    if (!selectedProduct) return;
+
+    document.querySelectorAll('.product-item').forEach(el => { el.classList.remove('selected'); el.setAttribute('aria-pressed', String(Number(el.dataset.id) === pid)); });
+    document.querySelector(`#productList [data-id="${pid}"]`).classList.add('selected');
+
+    document.getElementById('selectedProduct').textContent = selectedProduct.name;
+
+    // 渲染面值卡片（带预估价格，统一商城卡片）
+    const wrap = document.getElementById('amountChips');
+    wrap.innerHTML = selectedProduct.amounts.map(a => {
+        const est = giftcardPrice(selectedProduct, a);
+        return `<button type="button" class="amount-chip" aria-pressed="false" data-amt="${a}"${est === null ? ' disabled' : ''}>
+            <div class="chip-amt">${a} ${esc(selectedProduct.symbol)}</div>
+            <div class="chip-price">${est === null ? '价格暂不可用' : '约 ¥' + est.toFixed(2)}</div>
+        </button>`;
+    }).join('');
+
+    wrap.querySelectorAll('.amount-chip').forEach(el => {
+        el.onclick = () => {
+            wrap.querySelectorAll('.amount-chip').forEach(c => { c.classList.remove('selected'); c.setAttribute('aria-pressed', String(c === el)); });
+            el.classList.add('selected');
+            selectedAmount = parseFloat(el.dataset.amt);
+            updatePrice();
+        };
+    });
+
+    selectedAmount = selectedProduct.amounts[0];
+    wrap.querySelector('.amount-chip')?.classList.add('selected');
+    wrap.querySelector('.amount-chip')?.setAttribute('aria-pressed', 'true');
+
+    updatePrice();
+}
+
+function giftcardQuote(product, amount) {
+    return Array.isArray(product.quotes) ? product.quotes.find(item => Number(item.amount) === Number(amount)) : null;
+}
+
+function giftcardPrice(product, amount) {
+    // Use the same backend quote as order creation; do not repeat decimal ceiling in JavaScript.
+    const quote = giftcardQuote(product, amount);
+    const price = quote?.sell_price;
+    return typeof price === 'number' && Number.isFinite(price) && price > 0 ? price : null;
+}
+
+function giftcardOriginalPrice(product, amount) {
+    const sell = giftcardPrice(product, amount);
+    if (sell === null) return null;
+    const original = giftcardQuote(product, amount)?.original_price;
+    // Display-only floor: markup must never make the original-price row lower than the payable amount.
+    return typeof original === 'number' && Number.isFinite(original) && original > 0 ? Math.max(original, sell) : null;
+}
+
+function updatePrice() {
+    if (!selectedProduct || !selectedAmount) return;
+    const sell = giftcardPrice(selectedProduct, selectedAmount);
+    document.getElementById('submitBtn').disabled = sell === null;
+    if (sell === null) {
+        document.getElementById('priceBox').style.display = 'none';
+        document.getElementById('originalPrice').textContent = '—';
+        document.getElementById('sellPrice').textContent = '价格暂不可用';
+        return;
+    }
+
+    document.getElementById('priceBox').style.display = 'block';
+    document.getElementById('orderNo').textContent = 'MY' + Date.now();
+    const original = giftcardOriginalPrice(selectedProduct, selectedAmount);
+    document.getElementById('originalPrice').textContent = original === null ? '暂不可用' : `¥${original.toFixed(2)}`;
+    document.getElementById('sellPrice').textContent = `¥${sell.toFixed(2)}`;
+}
+
+document.getElementById('submitBtn').onclick = async () => {
+    const btn = document.getElementById('submitBtn');
+    if (btn.disabled || !selectedProduct || !selectedAmount) return;
+    btn.disabled = true;
+    btn.textContent = '提交中...';
+
+    const body = {
+        product_id: selectedProduct.id,
+        amount: selectedAmount,
+        account: document.getElementById('account').value.trim(),
+        password: document.getElementById('password').value,
+    };
+
+    if (Boolean(body.account) !== Boolean(body.password)) {
+        showToast('账号和密码请一并填写，或付款后再提交', 'error');
+        btn.disabled = false;
+        btn.textContent = '立即充值';
+        return;
+    }
+
+    try {
+        const d = await checkoutPost('/api/create-order', body);
+
+        if (d.code === 0) {
+            rememberOrder(d.data);
+            document.getElementById('account').value = '';
+            document.getElementById('password').value = '';
+            showPayDialog(d.data, 'giftcard');
+        } else {
+            showToast('下单失败: ' + d.msg, 'error');
+        }
+    } catch (e) {
+        showToast('网络错误，请重试', 'error');
+    }
+
+    btn.disabled = false;
+    btn.textContent = '立即充值';
+};
+
+// ===== AI 代充 =====
+async function loadPlans() {
+    try {
+        const r = await fetch('/api/ai-plans');
+        const d = await r.json();
+        plans = d.data;
+        renderPlans();
+    } catch (e) {
+        document.getElementById('planList').innerHTML = '加载失败，请刷新重试';
+    }
+}
+
+function renderPlans() {
+    const list = document.getElementById('planList');
+    if (!plans.length) {
+        list.innerHTML = '暂无套餐';
+        return;
+    }
+    list.innerHTML = plans.map(p => `
+        <button type="button" class="plan-item" data-id="${Number(p.id)}" aria-pressed="false">
+            ${providerIcon(p.provider_code)}
+            <span><span class="plan-name">${esc(p.name.startsWith(p.provider_name || 'ChatGPT') ? p.name : (p.provider_name || 'ChatGPT') + ' · ' + p.name)}</span>
+            <span class="plan-subtitle">${esc(p.subtitle)}</span>
+            </span>
+            <span class="plan-price">¥${p.sell_price.toFixed(2)}</span>
+        </button>
+    `).join('');
+
+    document.querySelectorAll('.plan-item').forEach(el => {
+        el.onclick = () => selectPlan(parseInt(el.dataset.id));
+    });
+}
+
+function providerIcon(provider) {
+    const brand = provider === 'claude' ? 'claude' : 'chatgpt';
+    return `<svg class="provider-icon ${brand}" aria-hidden="true"><use href="#icon-${brand}"/></svg>`;
+}
+
+function selectPlan(pid) {
+    const plan = plans.find(p => p.id === pid);
+    if (!plan) return;
+    selectedPlan = plan;
+    const claude = selectedPlan.provider_code === 'claude';
+    document.getElementById('claudeCredential').classList.toggle('hidden', !claude);
+    document.getElementById('chatgptCredential').classList.toggle('hidden', claude);
+    document.getElementById('chatgptInstructions').classList.toggle('hidden', claude);
+    ['aiToken', 'organizationId', 'organizationConfirm'].forEach(id => document.getElementById(id).value = '');
+
+    document.querySelectorAll('.plan-item').forEach(el => { el.classList.remove('selected'); el.setAttribute('aria-pressed', String(Number(el.dataset.id) === pid)); });
+    document.querySelector(`#planList [data-id="${pid}"]`).classList.add('selected');
+
+    document.getElementById('selectedPlan').innerHTML = providerIcon(selectedPlan.provider_code) + esc(selectedPlan.name);
+    document.getElementById('aiPriceBox').style.display = 'block';
+    document.getElementById('aiOrderNo').textContent = 'AI' + Date.now();
+    document.getElementById('aiSellPrice').textContent = `¥${selectedPlan.sell_price.toFixed(2)}`;
+    document.getElementById('aiSubmitBtn').disabled = false;
+}
+
+document.getElementById('aiSubmitBtn').onclick = async () => {
+    const btn = document.getElementById('aiSubmitBtn');
+    if (btn.disabled || !selectedPlan) return;
+    let credential;
+    try {
+        const hasOrg = document.getElementById('organizationId').value || document.getElementById('organizationConfirm').value;
+        credential = selectedPlan.provider_code === 'claude' ? (hasOrg ? claudeToken('organizationId', 'organizationConfirm') : '') : document.getElementById('aiToken').value.trim();
+    } catch (e) { showToast(e.message, 'error'); return; }
+    btn.disabled = true;
+    btn.textContent = '提交中...';
+
+    const body = {
+        plan_id: selectedPlan.id,
+        ai_token: credential,
+    };
+
+    try {
+        const d = await checkoutPost('/api/create-ai-order', body);
+
+        if (d.code === 0) {
+            rememberOrder(d.data);
+            ['aiToken', 'organizationId', 'organizationConfirm'].forEach(id => document.getElementById(id).value = '');
+            showPayDialog(d.data, 'ai');
+        } else {
+            showToast('下单失败: ' + d.msg, 'error');
+        }
+    } catch (e) {
+        showToast('网络错误，请重试', 'error');
+    }
+
+    btn.disabled = false;
+    btn.textContent = '立即代充';
+};
+
+// ===== 付款弹窗 =====
+function showPayDialog(data, type) {
+    closePayDialog();
+    if (data.paid) {
+        showToast('该订单已付款，请查看订单进度');
+        loadOrders();
+        return;
+    }
+    const html = `
+        <div class="modal-mask" id="payDialog">
+            <div class="modal">
+                <h2>扫码付款</h2>
+                <p class="pay-amount">应付金额: <strong>¥${data.sell_price.toFixed(2)}</strong></p>
+                <p class="pay-tip">请使用支付宝扫码付款，付款成功后自动充值</p>
+                <div class="pay-countdown">⏰ 支付倒计时: <span id="payCountdown" style="font-weight:700;">05:00</span></div>
+                <img class="qr" alt="支付宝二维码">
+                <p class="pay-status" id="payStatus">等待付款...</p>
+                <button class="modal-close" onclick="copyRecoveryLink(${Number(data.id)})">复制订单恢复链接（请私下保存）</button>
+                <div class="pay-actions"><button class="modal-close" onclick="retryPaymentCheck()">重新检查</button></div>
+                <button class="modal-close" onclick="closePayDialog()">取消</button>
+            </div>
+        </div>
+    `;
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    document.body.appendChild(div.firstElementChild);
+
+    if (typeof data.qr_code === 'string' && data.qr_code.startsWith('data:image/svg+xml;')) {
+        document.querySelector('#payDialog .qr').src = data.qr_code;
+    }
+
+    // 倒计时 5 分钟
+    let seconds = 5 * 60;
+    window.countdownTimer = setInterval(() => {
+        seconds--;
+        if (seconds <= 0) {
+            clearInterval(window.countdownTimer);
+            clearInterval(window.payPollTimer);
+            document.getElementById('payCountdown').textContent = '已超时';
+            document.getElementById('payStatus').textContent = '支付窗口已超时，如已付款请点击“重新检查”或联系客服';
+            return;
+        }
+        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const s = (seconds % 60).toString().padStart(2, '0');
+        document.getElementById('payCountdown').textContent = `${m}:${s}`;
+    }, 1000);
+
+    const checkUrl = type === 'giftcard' ? '/api/check-recharge' : '/api/check-ai-recharge';
+    const context = {data, type, checkUrl, stopped: false, inFlight: false};
+    window.payContext = context;
+
+    async function checkPayment() {
+        if (context.stopped || context.inFlight) return;
+        context.inFlight = true;
+        clearTimeout(window.payPollTimer);
+        const status = document.getElementById('payStatus');
+        if (status) status.textContent = '正在检查支付状态...';
+        try {
+            const d = await orderPost(checkUrl, data.id);
+            if (context.stopped) return;
+            if (d.code === 0 && (d.data.processing || d.data.review_required)) {
+                if (status) status.textContent = d.data.status_text || '已付款，正在处理';
+            } else if (d.code === 0 && d.data.paid) {
+                clearInterval(window.payPollTimer);
+                closePayDialog();
+                if (d.data.need_2fa) show2faDialog(d.data.order_id);
+                else if (d.data.need_account) showAccountDialog(d.data.order_id);
+                else if (d.data.need_token) showAiTokenDialog(d.data.order_id, d.data.provider);
+                else { showToast('付款成功！开始充值...', 'success'); loadOrders(); }
+            } else if (status) {
+                status.textContent = d.msg || '尚未检测到付款，请完成支付后重试';
+            }
+        } catch (e) {
+            if (status) status.textContent = '网络异常，请点击“重新检查”重试';
+        } finally {
+            context.inFlight = false;
+            if (!context.stopped && seconds > 0) window.payPollTimer = setTimeout(checkPayment, 3000);
+        }
+    }
+    window.retryPaymentCheck = checkPayment;
+
+    window.payPollTimer = setTimeout(checkPayment, 1000);
+}
+
+function show2faDialog(orderId) {
+    const html = `
+        <div class="modal-mask" id="2faDialog">
+            <div class="modal">
+                <h2>需要验证码</h2>
+                <p style="margin-bottom: 8px; color: #374151; font-size: 14px;">
+                    Apple ID 已发送 6 位验证码到你的设备，请输入验证码
+                </p>
+                <p style="margin-bottom: 16px; color: var(--danger); font-size: 13px;">
+                    如果没有收到验证码，说明 Apple 账号或密码错误
+                </p>
+                <input type="text" id="2faCode" class="code-input" placeholder="输入 6 位验证码" maxlength="6">
+                <button class="modal-btn" onclick="submit2fa(${orderId})">提交验证码</button>
+            </div>
+        </div>
+    `;
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    document.body.appendChild(div.firstElementChild);
+}
+
+async function submit2fa(orderId) {
+    const code = document.getElementById('2faCode').value.trim();
+    if (!code || code.length !== 6) {
+        showToast('请输入 6 位数字验证码', 'error');
+        return;
+    }
+
+    try {
+        const d = await orderPost('/api/submit-2fa', orderId, {code});
+
+        if (d.code === 0) {
+            close2faDialog();
+            showToast('验证码已提交！正在充值，订单状态会自动更新', 'success');
+            loadOrders();
+        } else {
+            showToast('验证码错误: ' + d.msg, 'error');
+        }
+    } catch (e) {
+        showToast('网络错误，请重试', 'error');
+    }
+}
+
+function claudeToken(firstId, secondId) {
+    const first = document.getElementById(firstId).value.trim().toLowerCase();
+    const second = document.getElementById(secondId).value.trim().toLowerCase();
+    if (!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(first) || /^0{8}-0{4}-0{4}-0{4}-0{12}$/.test(first) || first !== second) throw new Error('请输入两次一致且有效的 Organization ID');
+    return JSON.stringify({organization_id: first, organization_id_confirm: second});
+}
+
+function showAiTokenDialog(orderId, provider = 'chatgpt') {
+    const html = `
+        <div class="modal-mask" id="aiTokenDialog">
+            <div class="modal" role="dialog" aria-modal="true" aria-labelledby="aiTokenDialogTitle">
+                <div class="credential-modal-header">
+                    <h2 id="aiTokenDialogTitle" class="selection-heading">${providerIcon(provider)}提交账号信息</h2>
+                    <button type="button" class="modal-dismiss" aria-label="关闭账号信息弹窗" title="关闭" onclick="closeAiTokenDialog()"><span aria-hidden="true">×</span></button>
+                </div>
+                <p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 14px;">
+                    ${provider === 'claude' ? '请核对 Claude 目标账号，并从账号设置复制 Organization ID' : '请粘贴账号 Session JSON 字符串'}
+                </p>
+                ${provider === 'claude' ? '<label for="aiOrgInput">Organization ID</label><input id="aiOrgInput" autocomplete="off"><label for="aiOrgConfirm">再次输入 Organization ID</label><input id="aiOrgConfirm" autocomplete="off">' : '<textarea id="aiTokenInput" class="token-input" placeholder="粘贴待充值账号的完整 JSON（自动检测格式）"></textarea>'}
+                <button class="modal-btn" onclick="submitAiToken(${orderId})">提交账号信息</button>
+            </div>
+        </div>
+    `;
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    document.body.appendChild(div.firstElementChild);
+}
+
+async function submitAiToken(orderId) {
+    let token;
+    try { token = document.getElementById('aiOrgInput') ? claudeToken('aiOrgInput', 'aiOrgConfirm') : document.getElementById('aiTokenInput').value.trim(); }
+    catch (e) { showToast(e.message, 'error'); return; }
+    if (!token) {
+        showToast('请粘贴 Session JSON', 'error');
+        return;
+    }
+
+    try {
+        const d = await orderPost('/api/submit-ai-token', orderId, {token});
+
+        if (d.code === 0) {
+            closeAiTokenDialog();
+            showToast(d.data.status_text || '账号信息已提交');
+            loadOrders();
+        } else {
+            showToast('提交失败: ' + d.msg, 'error');
+        }
+    } catch (e) {
+        showToast('网络错误，请重试', 'error');
+    }
+}
+
+function close2faDialog() {
+    const d = document.getElementById('2faDialog');
+    if (d) d.remove();
+}
+
+function closeAiTokenDialog() {
+    const d = document.getElementById('aiTokenDialog');
+    if (d) d.remove();
+}
+
+function closePayDialog() {
+    if (window.payContext) window.payContext.stopped = true;
+    if (window.payPollTimer) clearInterval(window.payPollTimer);
+    if (window.countdownTimer) clearInterval(window.countdownTimer);
+    const d = document.getElementById('payDialog');
+    if (d) d.remove();
+}
+
+function element(tag, text, className) {
+    const node = document.createElement(tag);
+    if (text !== undefined) node.textContent = text;
+    if (className) node.className = className;
+    return node;
+}
+
+function action(text, callback, className = 'mini-btn') {
+    const button = element('button', text, className);
+    button.type = 'button';
+    button.onclick = callback;
+    return button;
+}
+
+function showAccountDialog(id) {
+    document.getElementById('accountDialog')?.remove();
+    const mask = element('div', undefined, 'modal-mask');
+    mask.id = 'accountDialog';
+    const box = element('div', undefined, 'modal');
+    const account = element('input');
+    account.type = 'email'; account.placeholder = 'Apple ID 邮箱'; account.autocomplete = 'off';
+    const password = element('input');
+    password.type = 'password'; password.placeholder = 'Apple ID 密码'; password.autocomplete = 'off';
+    const submit = action('提交账号', async () => {
+        if (submit.disabled) return;
+        submit.disabled = true;
+        try {
+            const result = await orderPost('/api/submit-account', id, {account: account.value.trim(), password: password.value});
+            if (result.code !== 0) throw new Error(result.msg);
+            password.value = ''; mask.remove();
+            if (result.data.need_2fa) show2faDialog(id);
+            showToast(result.data.status_text);
+            loadOrders();
+        } catch (error) { showToast(error.message, 'error'); }
+        finally { submit.disabled = false; }
+    }, 'modal-btn');
+    box.append(element('h2', '提交充值账号'), element('p', '账号信息仅暂存内存；服务重启后可在此重新提交。'), account, password, submit,
+        action('关闭', () => { password.value = ''; mask.remove(); }, 'modal-close'));
+    mask.append(box); document.body.append(mask);
+}
+
+async function resumePayment(order) {
+    try {
+        const result = await orderPost('/api/payment-info', order.id);
+        if (result.code !== 0) throw new Error(result.msg);
+        showPayDialog(result.data, result.data.type);
+    } catch (error) { showToast(error.message, 'error'); loadOrders(); }
+}
+
+async function recheckOrder(order) {
+    try {
+        const path = order.order_type === 'ai_membership' ? '/api/check-ai-recharge' : '/api/check-recharge';
+        const result = await orderPost(path, order.id);
+        if (result.code !== 0) throw new Error(result.msg);
+        showToast(result.data.status_text || '检查完成');
+        await loadOrders();
+    } catch (error) { showToast(error.message, 'error'); }
+}
+
+let loadingOrders = false;
+async function loadOrders() {
+    if (loadingOrders) return;
+    syncSavedOrders();
+    loadingOrders = true;
+    const list = document.getElementById('orderList');
+    try {
+        const results = await Promise.all(activeOrders.slice(0, 20).map(async order => {
+            const response = await fetch(`/api/order/${encodeURIComponent(order.id)}`, {
+                headers: {Authorization: `Bearer ${order.access_token}`}
+            });
+            if (!response.ok) return null;
+            const result = await response.json();
+            return result.code === 0 ? result.data : null;
+        }));
+        const orders = results.filter(Boolean);
+        list.replaceChildren();
+        if (!orders.length) { list.append(element('div', '暂无订单；换设备请打开已保存的恢复链接。')); return; }
+        for (const order of orders) {
+            const box = element('div', undefined, 'order-item');
+            const title = element('div', `${order.product_name} ${order.amount || ''} ${order.country || ''}`);
+            title.append(element('span', order.status_text, 'order-status'));
+            const amount = Number(order.sell_price).toFixed(2);
+            const info = `订单号: ${order.order_no}\n金额: ¥${amount}\n时间: ${order.created_at || ''}\n状态: ${order.status_text}`;
+            box.append(title, element('div', info), action('复制全部信息', () => copyText(info)),
+                action('保存恢复链接', () => copyRecoveryLink(order.id)));
+            if (order.fail_reason) box.append(element('div', order.fail_reason, 'order-error'));
+            if (order.review_required) box.append(element('p', '处理结果待核对，请联系客服；系统不会自动重复下单。'));
+            else {
+                if (order.need_account) box.append(action('提交 Apple ID', () => showAccountDialog(order.id)));
+                if (order.need_token) box.append(action('提交账号信息', () => showAiTokenDialog(order.id, order.ai_provider_code)));
+                if (order.need_2fa) box.append(action('输入验证码', () => show2faDialog(order.id)));
+                if (!order.paid) box.append(action('查看付款码', () => resumePayment(order)));
+                if (!order.upstream_order_id) box.append(action('重新检查付款', () => recheckOrder(order)));
+            }
+            list.append(box);
+        }
+    } catch (_) {
+        list.replaceChildren(element('div', '订单加载失败，请稍后重试', 'order-error'));
+    } finally { loadingOrders = false; }
+}
+
+async function initialize() {
+    restoreOrderLink();
+    try {
+        const response = await fetch('/api/config');
+        const result = await response.json();
+        if (result.code === 0) {
+            const config = result.data;
+            document.querySelector('[data-tab="giftcard"]').hidden = !config.giftcard;
+            document.querySelector('[data-tab="ai"]').hidden = !config.ai;
+            if (!config.giftcard && config.ai) document.querySelector('[data-tab="ai"]').click();
+        }
+    } catch (_) { /* product endpoints still enforce enabled features */ }
+    loadProducts(); loadPlans();
+    async function tick() { await loadOrders(); setTimeout(tick, 5000); }
+    tick();
+}
+initialize();
+</script>
+</body>
+</html>

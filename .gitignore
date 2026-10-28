@@ -1,0 +1,13 @@
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+__pycache__/
+*.py[cod]
+.DS_Store
+.workbuddy/
+
+artifacts/
+.venv/
+.claude/settings.local.json
+.pytest_cache/
