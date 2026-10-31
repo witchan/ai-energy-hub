@@ -37,6 +37,10 @@ WORKER_LEASE_SECONDS = 600
 PAYMENT_CHECK_LEASE_SECONDS = 180
 WORKER_SLOTS = threading.BoundedSemaphore(WORKER_CONCURRENCY)
 MAX_BODY = 65536
+# Session JSON can exceed the old 32 KiB character limit. Bound the credential
+# in UTF-8 bytes and allow room for JSON escaping in the two AI request bodies.
+MAX_AI_CREDENTIAL_BYTES = 256 * 1024
+MAX_AI_BODY = 2 * 1024 * 1024
 SECRET_TTL = 900
 ASSET_DIR = Path(__file__).resolve().parent
 
@@ -198,13 +202,21 @@ def is_valid_email(email):
 
 
 def validate_ai_credential(token, provider):
-    if not isinstance(token, str) or not token or len(token) > 32768:
+    if not isinstance(token, str):
         raise ValueError("账号信息必须为字符串")
+    if not token.strip():
+        raise ValueError("请粘贴账号信息")
+    try:
+        size = len(token.encode("utf-8"))
+    except UnicodeError:
+        raise ValueError("账号信息包含无效字符，请重新复制完整 JSON") from None
+    if size > MAX_AI_CREDENTIAL_BYTES:
+        raise ValueError("账号信息过长，完整 JSON 不能超过 256 KiB")
     if provider != "claude":
         try:
             if not isinstance(json.loads(token), dict):
                 raise ValueError()
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, RecursionError):
             raise ValueError("Session 必须是完整 JSON 对象")
         return token
     try:
@@ -213,7 +225,7 @@ def validate_ai_credential(token, provider):
         second = data["organization_id_confirm"].strip().lower()
         if not re.fullmatch(r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}", first) or not uuid.UUID(first).int or first != second:
             raise ValueError()
-    except (ValueError, TypeError, KeyError, AttributeError):
+    except (ValueError, TypeError, KeyError, AttributeError, RecursionError):
         raise ValueError("请输入两次一致且有效的 Organization ID")
     return json.dumps({"organization_id": first, "organization_id_confirm": second})
 
@@ -1118,7 +1130,8 @@ class Handler(BaseHTTPRequestHandler):
             if not re.fullmatch(r"[0-9]{1,9}", length_text):
                 raise ValueError("请求长度格式错误")
             length = int(length_text)
-            if length > MAX_BODY:
+            body_limit = MAX_AI_BODY if path in ("/api/create-ai-order", "/api/submit-ai-token") else MAX_BODY
+            if length > body_limit:
                 self.send_json({"code": 413, "msg": "请求内容过长"}, 413)
                 return
             if self.headers.get_content_type() != "application/json":

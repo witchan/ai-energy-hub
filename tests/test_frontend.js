@@ -501,6 +501,75 @@ async function main() {
         assert.equal(requests, 0);
         tests++;
     }
+    {
+        const {c, run, get, storage, session} = setup();
+        const value = JSON.stringify({accessToken:'fixture-session-secret-' + 'x'.repeat(70000), user:{name:'测试账号'}});
+        c.document.getElementById = id => id === 'aiOrgInput' ? null : get(id);
+        run('rememberOrder({id:7,access_token:"fixture-order-token"}); showAiTokenDialog(7); loadOrders=()=>{}');
+        get('aiTokenInput').value = value;
+        const requests = [];
+        c.fetch = async (url, options) => {
+            requests.push({url, body:JSON.parse(options.body)});
+            return {json:async()=>({code:0,data:{status_text:'充值处理中'}})};
+        };
+        await run('submitAiToken(7)');
+        assert.equal(requests.length, 1);
+        assert.equal(requests[0].url, '/api/submit-ai-token');
+        assert.equal(typeof requests[0].body.token, 'string');
+        assert.equal(requests[0].body.token, value);
+        assert.equal(requests[0].body.access_token, 'fixture-order-token');
+        assert.equal(get('aiTokenDialog').removed, true);
+        assert.ok(!JSON.stringify([...storage, ...session]).includes('fixture-session-secret-'));
+        tests++;
+    }
+    {
+        const {c, run, get, storage, session} = setup();
+        const value = JSON.stringify({accessToken:'fixture-session-secret-' + 'x'.repeat(70000)});
+        run('selectedPlan={id:9,provider_code:"chatgpt"}; showPayDialog=()=>{}');
+        get('aiToken').value = value;
+        let body;
+        c.fetch = async (url, options) => {
+            assert.equal(url, '/api/create-ai-order');
+            body = JSON.parse(options.body);
+            return {json:async()=>({code:0,data:{id:7,access_token:'fixture-order-token'}})};
+        };
+        await get('aiSubmitBtn').onclick();
+        assert.equal(typeof body.ai_token, 'string');
+        assert.equal(body.ai_token, value);
+        assert.equal(get('aiToken').value, '');
+        assert.ok(!JSON.stringify([...storage, ...session]).includes('fixture-session-secret-'));
+        tests++;
+    }
+    {
+        const {c, run, get} = setup();
+        const org = '12345678-1234-1234-1234-123456789abc';
+        run('rememberOrder({id:7,access_token:"fixture-order-token"}); showAiTokenDialog(7,"claude"); loadOrders=()=>{}');
+        get('aiOrgInput').value = org;
+        get('aiOrgConfirm').value = org;
+        let body;
+        c.fetch = async (_url, options) => {
+            body = JSON.parse(options.body);
+            return {json:async()=>({code:0,data:{status_text:'充值处理中'}})};
+        };
+        await run('submitAiToken(7)');
+        assert.equal(typeof body.token, 'string');
+        assert.deepEqual(JSON.parse(body.token), {organization_id:org,organization_id_confirm:org});
+        tests++;
+    }
+    {
+        const {c, run, get} = setup();
+        c.document.getElementById = id => id === 'aiOrgInput' ? null : get(id);
+        run('rememberOrder({id:7,access_token:"fixture-order-token"}); showAiTokenDialog(7)');
+        get('aiTokenInput').value = '{"fixture":true}';
+        const messages = [];
+        c.showToast = message => messages.push(message);
+        c.fetch = async () => ({json:async()=>({code:1,msg:'账号信息过长，完整 JSON 不能超过 256 KiB'})});
+        await run('submitAiToken(7)');
+        assert.deepEqual(messages, ['提交失败: 账号信息过长，完整 JSON 不能超过 256 KiB']);
+        assert.equal(get('aiTokenDialog').removed, undefined);
+        assert.equal(get('aiTokenInput').value, '{"fixture":true}');
+        tests++;
+    }
     console.log(`PASS frontend_tests=${tests}`);
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

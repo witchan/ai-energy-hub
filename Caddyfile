@@ -1,7 +1,13 @@
 {$DOMAIN} {
     header Strict-Transport-Security "max-age=31536000"
-    request_body {
-        max_size 64KB
+    # Match the backend limits, including JSON-escaped AI credentials.
+    @aiCredentials path /api/create-ai-order /api/submit-ai-token
+    request_body @aiCredentials {
+        max_size 2MiB
+    }
+    @otherRequests not path /api/create-ai-order /api/submit-ai-token
+    request_body @otherRequests {
+        max_size 64KiB
     }
     reverse_proxy shop:{$PORT:9006} {
         header_up X-Real-IP {remote_host}
