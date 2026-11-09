@@ -120,7 +120,8 @@ async function main() {
         run('products=[{id:9,name:"Apple/iTunes 🇯🇵 (日本)",country:"代加"}]; renderProducts()');
         const rendered=get('productList').innerHTML;
         assert.ok(rendered.includes('<span class="product-mark" aria-hidden="true">🇯🇵</span>'));
-        assert.ok(rendered.includes('Apple/iTunes 🇯🇵 (日本)'));
+        assert.ok(rendered.includes('<div class="product-name">日本</div>'));
+        assert.ok(!rendered.includes('Apple/iTunes'));
         assert.ok(!rendered.includes('<svg')); tests++;
     }
     {
@@ -568,6 +569,88 @@ async function main() {
         assert.deepEqual(messages, ['提交失败: 账号信息过长，完整 JSON 不能超过 256 KiB']);
         assert.equal(get('aiTokenDialog').removed, undefined);
         assert.equal(get('aiTokenInput').value, '{"fixture":true}');
+        tests++;
+    }
+    {
+        const {run} = setup();
+        for (const country of ['美国','英国','加拿大','澳大利亚','德国','巴西','芬兰','荷兰','意大利','爱尔兰','西班牙','法国','瑞士','日本','奥地利','比利时']) {
+            for (const name of [`Apple/iTunes 🇺🇸 (${country})-大额`, ` Apple/iTunes （ ${country} ） - 大额 `, `Apple/iTunes (${country})`]) {
+                assert.equal(run('productCountryName(' + JSON.stringify({name,country:'代加'}) + ')'), country);
+            }
+        }
+        tests++;
+    }
+    {
+        const {run} = setup();
+        for (const suffix of ['-大额',' - 大额','_大额','－大额','—大额','–大额']) {
+            assert.equal(run('productCountryName(' + JSON.stringify({name:'Apple/iTunes 🇺🇸 美国'+suffix}) + ')'), '美国');
+        }
+        assert.equal(run('productCountryName({name:"Apple/iTunes (美国-大额)"})'), '美国');
+        tests++;
+    }
+    {
+        const {run} = setup();
+        for (const input of [undefined, null, {}, {name:null}, {name:42}, {name:''}, {name:'Apple/iTunes 🇺🇸'}, {country:'代加',symbol:'€'}]) {
+            assert.equal(run('productCountryName(' + JSON.stringify(input) + ')'), '未知国家');
+        }
+        assert.equal(run('productCountryName({name:"Timor-Leste"})'), 'Timor-Leste');
+        assert.equal(run('productCountryName({name:"美国礼品卡"})'), '美国礼品卡');
+        tests++;
+    }
+    {
+        const {run,get} = setup();
+        run('products=[{id:60,name:"Apple/iTunes 🇺🇸 (美国)-大额",country:"代加",symbol:"$",amounts:[20]}]');
+        const before=run('JSON.stringify(products)');
+        run('renderProducts()');
+        assert.equal(run('JSON.stringify(products)'),before);
+        const markup=get('productList').innerHTML;
+        assert.ok(markup.includes('aria-hidden="true">🇺🇸</span>'));
+        assert.ok(markup.includes('<div class="product-name">美国</div>'));
+        assert.ok(!/大额|Apple\/iTunes|代加/.test(markup));
+        assert.ok(markup.includes('data-id="60"'));
+        tests++;
+    }
+    {
+        const {run,get} = setup();
+        run('products=[{id:60,name:"Apple/iTunes 🇺🇸 (美国)-大额",country:"代加",symbol:"$",amounts:[20],quotes:[{amount:20,sell_price:126.80,original_price:133.48}]}]; selectProduct(60)');
+        assert.equal(get('selectedProduct').textContent,'美国');
+        assert.equal(run('selectedProduct===products[0]'),true);
+        assert.equal(run('selectedProduct.name'),'Apple/iTunes 🇺🇸 (美国)-大额');
+        assert.equal(get('sellPrice').textContent,'¥126.80');
+        assert.equal(get('originalPrice').textContent,'¥133.48');
+        tests++;
+    }
+    {
+        const {c,run,get} = setup();
+        run('products=[{id:63,name:"Apple/iTunes 🇬🇧 (英国)-大额",symbol:"£",amounts:[20],quotes:[{amount:20,sell_price:180,original_price:185}]}]; selectProduct(63); showPayDialog=()=>{}');
+        let request;
+        c.fetch=async (url,options)=>{
+            request={url,body:JSON.parse(options.body)};
+            return {json:async()=>({code:0,data:{id:7,access_token:'fixture-order-token'}})};
+        };
+        await get('submitBtn').onclick();
+        assert.equal(request.url,'/api/create-order');
+        assert.deepEqual(request.body,{product_id:63,amount:20,account:'',password:''});
+        assert.equal(run('selectedProduct.name'),'Apple/iTunes 🇬🇧 (英国)-大额');
+        tests++;
+    }
+    {
+        const {run,get} = setup();
+        run('products=[{id:60,name:"Apple/iTunes 🇺🇸 (美国)-大额"},{id:61,name:"Apple/iTunes 🇺🇸 (美国)"}]; renderProducts()');
+        const markup=get('productList').innerHTML;
+        assert.equal((markup.match(/class="product-item"/g)||[]).length,2);
+        assert.ok(markup.includes('data-id="60"'));
+        assert.ok(markup.includes('data-id="61"'));
+        assert.equal(run('products.length'),2);
+        tests++;
+    }
+    {
+        const {run,get} = setup();
+        run('products=['+JSON.stringify({id:60,name:'Apple/iTunes 🇺🇸 (<img src=x onerror=alert>)-大额'})+']; renderProducts()');
+        const markup=get('productList').innerHTML;
+        assert.ok(markup.includes('&lt;img'));
+        assert.ok(!markup.includes('<img'));
+        assert.ok(!markup.includes('大额'));
         tests++;
     }
     console.log(`PASS frontend_tests=${tests}`);
